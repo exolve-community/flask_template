@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>flask_template</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .compact-table th, .compact-table td {
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            text-align: center; /* Центровка текста в таблице */
+            white-space: nowrap; /* Запрещаем перенос текста */
+            overflow: hidden;    /* Обрезаем длинный текст */
+            text-overflow: ellipsis; /* Добавляем многоточие для обрезанного текста */
+        }
+
+        /* Ширина колонок */
+        .compact-table th:nth-child(1),
+        .compact-table td:nth-child(1) {
+            width: 30%; /* Ширина для даты */
+        }
+
+        .compact-table th:nth-child(2),
+        .compact-table td:nth-child(2) {
+            width: 20%; /* Ширина для типа устройства */
+        }
+
+        .compact-table th:nth-child(3),
+        .compact-table td:nth-child(3) {
+            width: 50%; /* Ширина для браузера */
+        }
+
+        .small-text {
+            font-size: 1rem;
+        }
+
+        .header-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        /* Центровка кнопки "На страницу приложений" */
+        .centered-button {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Цвет кнопки "На страницу приложений" */
+        .btn-green {
+            background-color: #28c76f;
+            border-color: #28c76f;
+            color: white;
+        }
+
+        .btn-green:hover {
+            background-color: #22b761;
+            border-color: #22b761;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Кнопка в верхнем левом углу, отцентрована -->
+        <div class="mb-3 centered-button">
+            <a href="http://95.169.99.53:7000/" class="btn btn-green">На страницу приложений</a>
+        </div>
+
+        <h1 class="text-center">flask_template</h1>
+        <p class="text-center">Добро пожаловать в демо-приложение flask_template от сообщества разработчиков!</p>
+
+        <div class="mt-4">
+            <h2 class="header-text">Общее количество посещений:</h2>
+            <p class="small-text">{{ visit_count }}</p>
+
+            <h2 class="header-text">Список последних посещений:</h2>
+            <table class="table table-striped compact-table" id="visit-table">
+                <thead>
+                    <tr>
+                        <th>Дата посещения</th>
+                        <th>Тип устройства</th>
+                        <th>Браузер</th>
+                    </tr>
+                </thead>
+                <tbody id="visit-rows">
+                    {% for visit in visits[:10] %}
+                    <tr>
+                        <td>{{ visit[0] }}</td>
+                        <td>{{ visit[1] }}</td>
+                        <td>{{ visit[2] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if visits|length > 10 %}
+                <tfoot id="show-more-footer">
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <button id="show-more-btn" class="btn btn-primary">Показать больше</button>
+                        </td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const showMoreBtn = document.getElementById('show-more-btn');
+        const visitRows = document.getElementById('visit-rows');
+        const visits = {{ visits|tojson }};
+        let currentIndex = 10;
+
+        if (showMoreBtn) {
+            showMoreBtn.addEventListener('click', function () {
+                const nextIndex = currentIndex + 10;
+                const rowsToAdd = visits.slice(currentIndex, nextIndex);
+
+                rowsToAdd.forEach(visit => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${visit[0]}</td>
+                        <td>${visit[1]}</td>
+                        <td>${visit[2]}</td>
+                    `;
+                    visitRows.appendChild(row);
+                });
+
+                currentIndex = nextIndex;
+
+                // Если добавлены все записи, скрыть футер с кнопкой
+                if (currentIndex >= visits.length) {
+                    const showMoreFooter = document.getElementById('show-more-footer');
+                    showMoreFooter.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
